@@ -1,0 +1,982 @@
+Astha::::
+category controller page
+
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Models\Branch;
+use App\Models\Category;
+use Session;
+use Validator;
+
+class CategoryController extends Controller
+{
+    public function category()
+    {
+        $BranchList=Branch::get();
+        $CategoryList=Category::get();
+        return view('admin.category',compact('BranchList','CategoryList'));
+    }
+    public function submitcategory(Request $request)
+    {
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'branchID' => 'required',
+            ],
+            [
+                'branchID.required' => 'Branch Name Required',
+            ]
+        );
+
+        if ($validator->fails()) {
+           return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $data=$request->all();
+        if ($files = $request->file('image')) {
+            // Define upload path
+            $destinationPath = public_path('/image/'); // upload path
+            // Upload Orginal Image           
+            $image = date('YmdHis') .".". $files->getClientOriginalExtension();
+            $files->move($destinationPath, $image);
+
+            $data['image'] = "$image";
+        }
+        $Category = new Category();
+        $Category->create($data);
+        Session::flash('success', 'Category Successfully Added.');
+        return redirect()->back();
+    }
+
+    public function edit_category($id)
+    {
+        $BranchList=Branch::get();
+        $category=Category::where('id',$id)->first();
+        return view('admin.edit_category',compact('category','BranchList'));
+    }
+    public function category_update(Request $request)
+    {
+        $category=Category::where('id',$request->id)->first();
+        if($request->hasfile('image'))
+        {
+            $file = $request->file('image');
+            $filename = rand().'.'.$file->getClientOriginalExtension();
+            $file->move("public/image/",$filename);
+            $image = $filename;
+        }
+        else{
+            $image = $category->image;
+        }
+
+        $update=Category::where('id',$request->id)->update(array('branchID'=>$request->branchID,'image'=>$image,'CategoryName'=>$request->CategoryName,'category_type'=>$request->category_type));
+        Session::flash('success', 'Category Updated.');
+        return redirect('category');
+
+
+    }
+    public function delete_category($id)    
+    {
+        $detele=Category::where('id',$id)->delete();
+        Session::flash('danger', 'Category Delete Successfully');
+         return redirect()->back();
+    }
+    
+}
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------
+edit_category page
+
+
+@extends('admin.layouts.app')
+@section('header')
+<title>Category List</title>
+@include('admin.include.header')
+@endsection
+@section('sidebar')
+@include('admin.include.sidebar')
+@endsection
+@section('content')      
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title  fs-3 fw-bolder" style="padding-left: 1%">Edit Category</h5>
+
+                <!-- Floating Labels Form -->
+                <form class="row g-3" method="POST" action="{{ route('category_update') }}" enctype="multipart/form-data">
+                    @csrf
+                    <div class="col-md-12">
+                        <input type="hidden" name="id" value="{{$category->id}}">
+                        
+                            <div class="form-group">
+                            <label for="model_name" class="form-label">Branch</label>
+                            <select name="branchID" class="form-control">
+                                <option value="">Select Branch</option>
+                                @if(isset($BranchList))
+                                @foreach($BranchList as $list)
+                                <option value="{{$list->id}}" {{(old('branchID', $category->branchID) == $list->id ? 'selected' : '')}}>{{$list->BranchName}}</option>
+                                @endforeach
+                                @endif
+                                                                                      
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="model_name" class="form-label">Category Type</label>
+                            <select name="category_type" class="form-control">
+                                <option value="">Select Category</option>
+                             
+                                <option value="Product" {{(old('category_type', $category->category_type) =="Product" ? 'selected' : '')}}>Product</option>
+                                <option value="Service"  {{(old('category_type', $category->category_type) =="Service" ? 'selected' : '')}}>Service</option>
+                              
+                               
+                            </select>
+                        </div>
+                            <label for="model_name" class="form-label">Image</label>
+x
+                        <input type="file" class="form-control" name="image"  value="{{$category->image}}"><br>
+                        <img src="{{asset('public/image')}}/{{$category->image}}" alt="" height="100px"> 
+                        <label for="model_name" class="form-label">Category Name</label>
+
+                           
+
+                            <input type="text" class="form-control" name="CategoryName"
+                                placeholder="Category Name"  value="{{$category->CategoryName }}" required><br>
+                            
+                    </div>
+                    <div class="text-start mt-3 ml-3">
+                        <button type="submit" class="btn btn-primary"><i class="ri-add-circle-fill"></i>&nbsp;Update
+                            Category</button>
+                    </div>
+                </form><!-- End floating Labels Form -->
+
+            </div>
+        </div>
+    </div>
+ 
+</div>
+</div>
+</div>
+@endsection
+@section('footer')
+<script src="{{ asset('assets/js/jquery-3.6.0.min.js') }}"></script>
+@include('admin.include.footer')
+@endsection
+--------------------------------------------------------------------------------------------------------------------------
+app.blade.php page
+
+@yield('header')
+@yield('sidebar')
+@yield('content')
+@yield('footer')
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Role\RoleController;
+use App\Http\Controllers\Permission\PermissionController;
+use App\Http\Controllers\Customer\CustomerController;
+use App\Http\Controllers\Admin\ServiceAreaController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Branch\BranchController;
+use App\Http\Controllers\vendor\VendorController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\BrandController;
+use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\CommonController;
+use App\Http\Controllers\TaxController;
+use App\Http\Controllers\POSController;
+use App\Http\Controllers\UnitController;
+use App\Http\Controllers\PackageController;
+use App\Http\Controllers\PromocodeController;
+use App\Http\Controllers\ServiceSubcategoryController;
+use App\Http\Controllers\PayrollController;
+use App\Http\Controllers\BasicSettingsController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ComboPackageController;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
+|
+*/
+
+Route::get('/', function () {
+    return redirect('/login');
+});
+
+Route::get('/dashboard', function () {
+    return view('admin/dashboard');
+})->middleware(['auth'])->name('dashboard');
+
+require __DIR__ . '/auth.php';
+
+// USER BASED PERMISSION RELATED ROUTES
+Route::group(['middleware' => ['auth']], function () {
+Route::group(['middleware' => ['permission:asign userBasedPermission']], function () {
+
+    Route::get('/user-permissionAsign-list', [PermissionController::class, 'userPermissionAsignList',])->middleware(['auth'])->name('userPermissionAsignList');
+    Route::get('/permission-asign-to-user/{role}', [PermissionController::class, 'PermissionAsignToUser'])->name('PermissionAsignToUser');
+    Route::post('/asign-permission-to-user', [PermissionController::class, 'PermissionAsignToUserAction'])->name('PermissionAsignToUserAction');
+});
+
+
+// ROLE BASED PERMISSION RELATED ROUTES
+Route::group(['middleware' => ['permission:asign roleBasedPermission']], function () {
+
+    Route::get('/permission-asign/{role}', [PermissionController::class, 'PermissionAsign'])->name('PermissionAsign');
+    Route::post('/asign-permission', [PermissionController::class, 'asignPermission'])->name('asignPermission');
+});
+
+
+//================================ROLE=============================
+// VIEW ROLE
+Route::group(['middleware' => ['permission:view role']], function () {
+
+    Route::get('/role-list', [RoleController::class, 'index'])->name('roleList');
+});
+
+// ADD ROLE
+Route::group(['middleware' => ['permission:add role']], function () {
+
+    Route::post('/add-role', [RoleController::class, 'addRole'])->name('addRole');
+});
+// DELETE ROLE
+Route::group(['middleware' => ['permission:delete role']], function () {
+
+Route::post('/delete-role', [RoleController::class, 'deleteRole'])->name('deleteRole');
+});
+// EDIT ROLE
+Route::group(['middleware' => ['permission:edit role']], function () {
+
+    Route::get('/edit-role/{id}', [RoleController::class, 'editRole'])->name('editRole');
+    Route::post('/edit-role-action', [RoleController::class, 'editRoleAction'])->name('editRoleAction');
+});
+//================================ROLE=============================
+
+// ROLE ASIGNMENT TO USER RELATED ROUTES
+
+Route::group(['middleware' => ['permission:asign roleToUser|revoke roleToUser']], function () {
+
+    Route::get('/asign-role', [RoleController::class, 'asignRole'])->name('asignRole');
+});
+
+Route::group(['middleware' => ['permission:asign roleToUser']], function () {
+
+    Route::post('/asign-role-action', [RoleController::class, 'asignRoleAction'])->name('asignRoleAction');
+});
+
+// ROLE REVOKE TO USER RELATED ROUTES
+Route::group(['middleware' => ['permission:revoke roleToUser']], function () {
+
+    Route::post('/revoke-role-action', [RoleController::class, 'revokeRoleAction'])->name('revokeRoleAction');
+    Route::post('/usr-role-check', [RoleController::class, 'getRole'])->name('getRole');
+});
+
+
+//====================== PERMISSION =====================================
+Route::group(['middleware' => ['permission:view permission']], function () {
+
+    Route::get('/permission-list', [PermissionController::class, 'index'])->name('PermissionList');
+});
+// DELETE PERMISSION
+Route::group(['middleware' => ['permission:delete permission']], function () {
+
+    Route::post('/delete-permission', [PermissionController::class, 'deletePermission'])->name('deletePermission');
+});
+// ADD PERMISSION
+Route::group(['middleware' => ['permission:add permission']], function () {
+
+    Route::post('/add-permission', [PermissionController::class, 'addPermission'])->name('addPermission');
+});
+// EDIT PERMISSION
+Route::group(['middleware' => ['permission:edit permission']], function () {
+
+    Route::get('/permission-edit/{id}', [PermissionController::class, 'editPermission'])->name('permissionEdit');
+    Route::post('/permission-edit-action', [PermissionController::class, 'editPermissionAction'])->name('permissionEditAction');
+});
+//====================== PERMISSION =====================================
+
+
+
+    // ====================== General Setting ==================
+    Route::group(['middleware' => ['permission:General Setting']], function () {
+        Route::get('general-setting-details', [SettingController::class, 'general_setting_details'])->name('general_setting_details');
+        Route::post('save-general-setting', [SettingController::class, 'save_general_setting'])->name('save-general-setting');
+    });
+    // ====================== General Setting ==================
+
+    Route::group(['middleware' => ['permission:User']], function () {
+
+        Route::group(['middleware' => ['permission:user profile']], function () {
+            Route::get('/user-profile/{id?}', [UserController::class, 'userprofile'])->name('user-profile');
+        });
+    });
+    //customer
+    
+    Route::get('verify-customer-by-otp/{userID?}', [CustomerController::class, 'verify_customer_by_otp'])->name('verify_customer_by_otp');
+    Route::post('verify-customer-by-otp', [CustomerController::class, 'verify_customer_by_otp_check'])->name('verify_customer_by_otp_check');
+
+    //police station
+    Route::get('police-station', [ServiceAreaController::class, 'police_station'])->name('police_station');
+    Route::post('add-police-station', [ServiceAreaController::class, 'police_station_store'])->name('police_station_store');
+    Route::get('edit-police-station/{id?}', [ServiceAreaController::class, 'police_station_edit'])->name('police_station_edit');
+    Route::post('update-police-station', [ServiceAreaController::class, 'police_station_update'])->name('police_station_update');
+    Route::get('delete-police-station/{id?}', [ServiceAreaController::class, 'police_station_delete'])->name('police_station_delete');
+
+    //pincode
+    Route::get('pin-codes', [ServiceAreaController::class, 'pin_codes'])->name('pin_codes');
+    Route::post('add-pin-code', [ServiceAreaController::class, 'pin_code_store'])->name('pin_code_store');
+    Route::get('edit-pin-code-station/{id?}', [ServiceAreaController::class, 'pin_code_edit'])->name('pin_code_edit');
+    Route::post('update-pin-code', [ServiceAreaController::class, 'pincode_update'])->name('pincode_update');
+
+    Route::get('delete-pin-code/{id?}', [ServiceAreaController::class, 'pin_code_delete'])->name('pin_code_delete');
+
+    //post office
+    Route::get('post-office', [ServiceAreaController::class, 'post_office'])->name('post_office');
+    Route::post('add-post-office', [ServiceAreaController::class, 'add_post_office'])->name('add_post_office');
+    Route::get('edit-post-office/{id?}', [ServiceAreaController::class, 'post_office_edit'])->name('post_office_edit');
+    Route::post('update-post-office', [ServiceAreaController::class, 'post_office_update'])->name('post_office_update');
+    Route::get('delete-post-office/{id?}', [ServiceAreaController::class, 'post_office_delete'])->name('post_office_delete');
+
+    //product management
+    Route::get('product', [ProductController::class, 'product'])->name('product');
+    Route::get('stock-report', [ProductController::class, 'stock_report'])->name('stock-report');
+    Route::post('product', [ProductController::class, 'add_product'])->name('add_product');
+    Route::get('edit-product/{id?}', [ProductController::class, 'edit_product'])->name('edit_product');
+    Route::post('update-product', [ProductController::class, 'update_product'])->name('update_product');
+    Route::get('delete-product/{id?}', [ProductController::class, 'delete_product'])->name('delete_product');
+    Route::get('/branchwise_product/{id?}',[ProductController::class,'branchwise_product'])->name('branchwise_product');
+    Route::post('/branchwise_product_save',[ProductController::class,'branchwise_product_save'])->name('branchwise_product_save');
+    Route::get('/fetch-data/{branchId}', [ProductController::class, 'fetchData']);
+    Route::get('/fetch-product-count/{branchId}/{productId}', [ProductController::class, 'fetchProductCount']);
+
+    Route::get('service', [ProductController::class, 'service'])->name('service');
+    Route::post('service', [ProductController::class, 'add_service'])->name('add_service');
+    Route::get('edit_service/{id?}', [ProductController::class, 'edit_service'])->name('edit_service');
+    Route::post('update_service', [ProductController::class, 'update_service'])->name('update_service');
+    Route::get('delete-service/{id?}', [ProductController::class, 'delete_service'])->name('delete_service');
+
+    Route::get('promocode', [PromocodeController::class, 'promocode'])->name('promocode');
+    Route::post('promocode', [PromocodeController::class, 'add_promocode'])->name('add_promocode');
+    Route::get('edit_promocode/{id?}', [PromocodeController::class, 'edit_promocode'])->name('edit_promocode');
+    Route::post('update_promocode', [PromocodeController::class, 'update_service'])->name('update_promocode');
+    Route::get('delete-promocode/{id?}', [PromocodeController::class, 'delete_promocode'])->name('delete_promocode');
+
+
+    Route::get('purchase', [ProductController::class, 'purchaseSubscription']);
+
+
+
+//customer management
+
+  Route::group(['middleware' => ['permission:BranchManagement']], function () {
+            Route::get('add-customer', [CustomerController::class, 'add_customer'])->name('add_customer');
+    Route::post('add-customer', [CustomerController::class, 'submit_customer'])->name('submit_customer');
+    Route::get('customer-list', [CustomerController::class, 'customer_list'])->name('customer_list');
+        });
+    });
+
+
+//Branch Management
+Route::group(['middleware' => ['permission:BranchManagement']], function () {
+
+    Route::get('branches', [BranchController::class, 'branch'])->name('branch');
+    Route::post('branches-save', [BranchController::class, 'branch_save'])->name('branch-save');
+    Route::get('branches-edit/{id?}', [BranchController::class, 'branch_edit'])->name('branch-edit');
+    Route::post('branches-update', [BranchController::class, 'branch_update'])->name('branch-update');
+    Route::get('branches-delete/{id?}', [BranchController::class, 'branch_delete'])->name('branch-delete');
+    });
+
+  
+
+//Vendor Management
+
+Route::group(['middleware' => ['permission:VendorManagement']], function () {
+
+    Route::get('vendors', [VendorController::class, 'vendors'])->name('vendors');
+    Route::post('vendor-save', [VendorController::class, 'vendor_save'])->name('vendor-save');
+    Route::get('vendor-edit/{id?}', [VendorController::class, 'vendor_edit'])->name('vendor-edit');
+    Route::post('vendor-update', [VendorController::class, 'vendor_update'])->name('vendor-update');
+    Route::get('vendor-delete/{id?}', [VendorController::class, 'vendor_delete'])->name('vendor-delete');
+    });
+
+    Route::get('category', [CategoryController::class, 'category'])->name('category');
+    Route::post('category', [CategoryController::class, 'submitcategory'])->name('submitcategory');
+    Route::get('edit_category/{id?}', [CategoryController::class, 'edit_category'])->name('edit_category');
+    Route::post('category_update', [CategoryController::class, 'category_update'])->name('category_update');
+    Route::get('delete_category/{id?}', [CategoryController::class, 'delete_category'])->name('delete_category');
+    //sub category
+    Route::get('sub-category', [ServiceSubcategoryController::class, 'subcategory'])->name('sub-category');
+    Route::post('sub-category', [ServiceSubcategoryController::class, 'Postsubcategory'])->name('Postsub-category');
+    Route::get('edit_sub_category/{id?}', [ServiceSubcategoryController::class, 'edit_sub_category'])->name('edit_sub_category');
+    Route::post('sub_category_update', [ServiceSubcategoryController::class, 'sub_category_update'])->name('sub_category_update');
+    Route::get('delete_sub_category/{id?}', [ServiceSubcategoryController::class, 'delete_sub_category'])->name('delete_sub_category');
+ 
+
+
+    Route::get('brand', [BrandController::class, 'brand'])->name('brand');
+    Route::post('brandsubmit', [BrandController::class, 'brandsubmit'])->name('brandsubmit');
+    Route::get('edit_brand/{id?}', [BrandController::class, 'edit_brand'])->name('edit_brand');
+    Route::post('update_brand', [BrandController::class, 'update_brand'])->name('update_brand');
+    Route::get('delete_brand/{id?}', [BrandController::class, 'delete_brand'])->name('delete_brand');
+
+    Route::get('tax', [TaxController::class, 'tax'])->name('tax');
+    Route::post('taxsubmit', [TaxController::class, 'taxsubmit'])->name('taxsubmit');
+    Route::get('edit_tax/{id?}', [TaxController::class, 'edit_tax'])->name('edit_tax');
+    Route::post('update_tax', [TaxController::class, 'update_tax'])->name('update_tax');
+    Route::get('delete_tax/{id?}', [TaxController::class, 'delete_tax'])->name('delete_tax');
+
+    Route::get('unit', [UnitController::class, 'unit'])->name('unit');
+    Route::post('unitsubmit', [UnitController::class, 'unitsubmit'])->name('unitsubmit');
+    Route::get('edit_unit/{id?}', [UnitController::class, 'edit_unit'])->name('edit_unit');
+    Route::post('update_unit', [UnitController::class, 'update_unit'])->name('update_unit');
+    Route::get('delete_unit/{id?}', [UnitController::class, 'delete_unit'])->name('delete_unit');
+
+    //slider
+
+    Route::get('slider', [CommonController::class, 'slider'])->name('slider');
+    Route::post('Submitslider', [CommonController::class, 'Submitslider'])->name('Submitslider');
+
+
+     //pos
+    Route::get('pos', [POSController::class, 'pos'])->name('pos');
+    Route::get('Regular-Beauty-Service', [POSController::class, 'Regular_Beauty_Service'])->name('Regular-Beauty-Service');
+    Route::get('pos/{customer_id?}', [POSController::class, 'poswithCustomer'])->name('poswithCustomer');
+    Route::post('add-customer', [POSController::class, 'add_customer'])->name('add-customer');
+    Route::get('invoice/{orderid?}', [POSController::class, 'invoice'])->name('invoice');
+    Route::post('addCartFromPos', [POSController::class, 'addCartFromPos'])->name('addCartFromPos');
+    Route::get('checkoutpos/{customer_id?}/{gst_type?}/{promocodePram?}', [POSController::class, 'checkoutPOS'])->name('checkoutPOS');
+    Route::post('applypromodode', [POSController::class, 'applypromodode'])->name('applypromodode');
+    Route::post('poscheckout', [POSController::class, 'poscheckout'])->name('poscheckout');
+
+    //package
+    Route::get('package', [PackageController::class, 'package'])->name('package');
+    Route::post('Addpackage', [PackageController::class, 'Addpackage'])->name('Addpackage');
+
+    //packagePOS
+    Route::get('Packagepos', [PackageController::class, 'Packagepos'])->name('Packagepos');
+    Route::post('add-customer-package', [PackageController::class, 'add_customer_on_package'])->name('add-customer-package');
+    Route::get('pos-package/{customer_id?}', [PackageController::class, 'poswithCustomerPackage'])->name('poswithCustomerPackage');
+
+    Route::get('package-sale/{customer_id?}/{packageId?}', [PackageController::class, 'package_sale'])->name('package_sale');
+
+    Route::post('get-wallet-balance', [POSController::class, 'getwalletbalance'])->name('getwalletbalance');
+
+    Route::get('posdesign', [POSController::class, 'posdesign'])->name('posdesign');
+
+    Route::get('order-confirmation/{orderid?}', [POSController::class, 'order_confirmation'])->name('order_confirmation');
+    Route::post('assignEmployee', [POSController::class, 'assignEmployee'])->name('assignEmployee');
+
+    Route::get('employee', [EmployeeController::class, 'employee'])->name('employee');
+    Route::post('Postemployee', [EmployeeController::class, 'Postemployee'])->name('Postemployee');
+    Route::get('edit_employee/{id?}', [EmployeeController::class,'edit_employee'])->name('edit_employee');
+    Route::post('update_employee', [EmployeeController::class, 'update_employee'])->name('update_employee');
+    Route::get('delete_employee/{id?}', [EmployeeController::class, 'delete_employee'])->name('delete_employee');
+
+    //Payroll
+    Route::get('/payroll/{id?}',[PayrollController::class, 'payroll'])->name('payroll');
+    Route::get('/genarate_payslip/{emp_id?}',[PayrollController::class, 'genarate_payslip'])->name('genarate_payslip');
+    Route::post('/basic_update',[PayrollController::class,'basic_update'])->name('basic_update');
+    Route::post('/saturation_deduction',[PayrollController::class,'saturation_deduction'])->name('saturation_deduction');
+    Route::post('/allownce',[PayrollController::class,'allownce'])->name('allownce');
+    Route::post('/commission',[PayrollController::class,'commission'])->name('commission');
+    Route::get('/delete_saturation_deduction/{id?}',[PayrollController::class,'delete_saturation_deduction'])->name('delete_saturation_deduction');
+    Route::get('/delete_allownce/{id?}',[PayrollController::class,'delete_allownce'])->name('delete_allownce');
+    Route::get('/delete_commission/{id?}',[PayrollController::class,'delete_commission'])->name('delete_commission');
+
+    //basicSettings
+    Route::get('basic-settings',[BasicSettingsController::class,'basic_settings'])->name('basic_settings');
+    Route::post('basic-settings',[BasicSettingsController::class,'Updatebasic_settings'])->name('Updatebasic_settings');
+
+
+    Route::get('orders',[OrderController::class,'orders'])->name('orders');
+    Route::get('transaction-report',[OrderController::class,'transaction_report'])->name('transaction-report');
+    Route::get('emp-wise-transaction-report',[OrderController::class,'emp_wise_transaction_report'])->name('emp-wise-transaction-report');
+    Route::post('make-part-payment',[OrderController::class,'make_part_payment'])->name('make-part-payment');
+    Route::post('expense',[OrderController::class,'expense'])->name('expense');
+    Route::get('make-payment/{id?}',[OrderController::class,'make_payment'])->name('make-payment');
+    Route::get('import-orders',[OrderController::class,'import_orders'])->name('import_orders');
+    Route::post('import-file-import', [OrderController::class, 'import_file_import'])->name('import_file_import');
+    Route::get('assign-product', [OrderController::class, 'assign_product'])->name('assign_product');
+
+    Route::post('/BranchwiseProductP', [OrderController::class, 'BranchwiseProductP'])->name('BranchwiseProductP');
+    Route::post('/BranchwiseUserP', [OrderController::class, 'BranchwiseUserP'])->name('BranchwiseUserP');
+    Route::post('assignProduct', [OrderController::class, 'assignProduct'])->name('assignProduct');
+
+
+    //combo package
+    Route::get('combo-package', [ComboPackageController::class, 'combo_package'])->name('combo-package');
+    Route::post('add-combo-package', [ComboPackageController::class, 'add_combo_package'])->name('add-combo-package');
+
+
+    //select customer
+    Route::post('getCustomerbyCustomer', [POSController::class, 'getCustomerbyCustomer'])->name('getCustomerbyCustomer');
+    Route::post('setPosSelectedUser', [POSController::class, 'setPosSelectedUser'])->name('setPosSelectedUser');
+    Route::post('set-selected-customer', [POSController::class, 'setSelectedCustomer'])->name('setSelectedCustomer');
+    Route::post('/searchProducts', [POSController::class, 'searchProducts'])->name('searchProducts');
+    /*add product on cart*/
+    Route::post('/PosCartadd', [POSController::class, 'PosCartadd'])->name('PosCartadd');
+    /*get product for pos*/
+    Route::post('/GetCartPos', [POSController::class, 'GetCartPos'])->name('GetCartPos');
+    Route::post('/applypromocode', [POSController::class, 'applypromocode'])->name('applypromocode');
+    Route::get('/deleteFromCart/{id?}', [POSController::class, 'deleteFromCart'])->name('deleteFromCart');
+
+------------------------------------------------------------------------------------------------------------------------------------
+edit_product page
+
+@extends('admin.layouts.app')
+@section('header')
+<title>Product Managemnt</title>
+@include('admin.include.header')
+@endsection
+@section('sidebar')
+@include('admin.include.sidebar')
+@endsection
+@section('content')      
+                  <div class="row">
+                     <div class="col-md-12 col-lg-12">
+                        <div class="card">
+                           <div class="card-header">
+                              <h3 class="card-title">{{@$header_type}} Product</h3>
+                           </div>
+                           <form method="post" action="{{route($route)}}" enctype="multipart/form-data">
+                              @csrf
+                              <input type="hidden" name="id" value="{{@$product_details->id}}">
+                           <div class="card-body">
+                              <div class="form-row">
+
+                                 <div class="form-group col-md-2 mb-0">
+                                     <label for="model_name" class="form-label">Br6anch</label>
+                                     <select name="BranchId" class="form-control">
+                                         <option value="">Select Branch</option>
+                                         @if(isset($Branch_list))
+                                         @foreach($Branch_list as $list)
+                                         <option value="{{$list->id}}" {{$product_details->BranchId == $list->id  ? 'selected' : ''}}>{{$list->BranchName}}</option>
+                                         @endforeach
+                                         @endif
+                                        
+                                     </select>
+                                 </div>
+
+                                 <div class="form-group col-md-2 mb-0">
+                                     <label for="model_name" class="form-label">Vendor</label>
+                                     <select name="VendorId" class="form-control">
+                                         <option value="">Select Vendor</option>
+                                         @if(isset($VendorDeatil_list))
+                                         @foreach($VendorDeatil_list as $list)
+                                         <option value="{{$list->id}}" {{$product_details->VendorId == $list->id  ? 'selected' : ''}}>{{$list->vendor_name}}</option>
+                                         @endforeach
+                                         @endif 
+                                        
+                                     </select>
+                                 </div>
+                                 <div class="form-group col-md-2 mb-0">
+                                     <label for="model_name" class="form-label">Category</label>
+                                     <select name="CategoryID" class="form-control">
+                                         <option value="">Select Vendor</option>
+                                         @if(isset($Category_list))
+                                         @foreach($Category_list as $list)
+                                         <option value="{{$list->id}}" {{$product_details->CategoryID == $list->id  ? 'selected' : ''}}>{{$list->CategoryName}}</option>
+                                         @endforeach
+                                         @endif
+                                        
+                                     </select>
+                                 </div>
+
+                                 <div class="form-group col-md-4 mb-0">
+                                    <label for="model_name" class="form-label">Product Name</label>
+                                    <div class="form-group">
+                                       <input type="text" class="form-control" placeholder="Product Name" value="{{@$product_details->name}}" name="name" required>
+                                    </div>
+                                 </div>
+                                 <div class="form-group col-md-2 mb-0">
+                                    <label for="model_name" class="form-label">Exp Date</label>
+                                    <div class="form-group">
+                                       <input type="date" class="form-control" placeholder="Expiary Date" value="{{@$product_details->exp_date}}" name="exp_date" required>
+                                    </div>
+                                 </div>
+                                 <div class="form-group col-md-2 mb-0">
+                                    <label for="model_name" class="form-label">Price</label>
+                                    <div class="form-group">
+                                       <input type="number" class="form-control" placeholder="Product Price" value="{{@$product_details->price}}" name="price" required>
+                                    </div>
+                                 </div>
+                                 <div class="form-group col-md-2 mb-0">
+                                    <label for="model_name" class="form-label">Previous Price</label>
+                                    <div class="form-group">
+                                       <input type="number" class="form-control" placeholder="Previous Price" value="{{@$product_details->previous_price}}" name="previous_price" >
+                                    </div>
+                                 </div>
+                                 <div class="form-group col-md-2 mb-0">
+                                    <label for="model_name" class="form-label">SKU</label>
+                                    <div class="form-group">
+                                       <input type="text" class="form-control" placeholder="SKU" value="{{$sku}}" name="sku" required>
+                                    </div>
+                                 </div>
+                                 <div class="form-group col-md-2 mb-0">
+                                    <label for="model_name" class="form-label">Total in Stock</label>
+                                    <div class="form-group">
+                                       <input type="numbers" class="form-control" placeholder="Total in Stock" value="{{@$product_details->actual_stock}}" name="actual_stock" required>
+                                    </div>
+                                 </div>
+                                    <div class="form-group col-md-2 mb-0">
+                                       <label for="model_name" class="form-label">Select Tax</label>
+                                       <select name="tax" class="form-control">
+                                          <option value="">Select tax</option>
+                                          
+                                          @foreach($tax as $tax)
+                                          <option value="{{$tax->id}}" {{$product_details->tax == $list->id  ? 'selected' : ''}}>{{$tax->name}}</option>
+                                          @endforeach
+                                       
+                                          <option value="No GST">No GST</option>
+                                          
+                                       </select>
+                                    </div>
+                                 <div class="form-group col-md-2 mb-0">
+                                    <label for="model_name" class="form-label">Picture</label>
+                                    <div class="form-group">
+                                       <input type="file" class="form-control" name="image" value="{{$product_details->image}}" >
+                                    </div>
+                                    <img src="{{asset('public/invoimagece')}}/{{$product_details->image}}" width="100px" alt="">
+                                 </div>
+                                 <div class="form-group col-md-12 mb-0">
+                                    <label>Description</label>
+                                    <div class="form-group">
+                                       <textarea class="content" name="description">{{$product_details->description}}</textarea>
+                                    </div>
+                                 </div>
+                                 
+                                 </div>
+                              <div class="form-footer mt-2">
+                                 <button type="submit" class="btn btn-primary">Save</button>
+                              </div>
+                           </div>
+                           </form>
+                        </div>
+                     </div>
+                  </div>
+
+                     <!-- ------------------------------------------ -->
+                     <div class="row">
+                     <div class="col-md-12 col-lg-12">
+                        <div class="card">
+                           <div class="card-header">
+                              <h3 class="card-title">Product List</h3>
+                           </div>
+                           <div class="card-body">
+                              <div class="">
+                              <div class="table-responsive">
+                                 <table id="example" class="table table-borderless text-nowrap key-buttons" width="100%">
+                                    <thead>
+                                       <tr>
+                                          <th class="border-bottom-0">Sl. No</th>
+                                          <th class="border-bottom-0">Name</th>
+                                          <th class="border-bottom-0">SKU</th>
+                                          <th class="border-bottom-0">Action</th>
+                                          
+                                       </tr>
+                                    </thead>
+                                    <tbody>
+                                       @foreach($product_list as $product)
+                                       <tr>
+                                          <td>{{$loop->iteration}}</td>
+                                          <td>{{$product->name}}</td>
+                                          <td>{{$product->sku}}</td>
+                                          <td>
+
+                                             <a href="{{route('edit_product',$product->id)}}" class="btn btn-primary  btn-sm" title="Edit Police Station"><i class="fa fa-pencil"></i></a>
+
+                                             <a href="{{route('delete_product',$product->id)}}" class="btn btn-danger  btn-sm" title="Edit Police Station"><i class="fa fa-trash"></i></a>
+                                          </td>
+                                       </tr>
+                                       @endforeach
+                                       
+                                    </tbody>
+                                 </table>
+                              </div>
+                           </div>
+                           </div>
+                        </div>
+                     </div>
+                     </div>
+                  </div>
+              </div>
+            </div>
+@endsection
+@section('footer')
+@include('admin.include.footer')
+@endsection
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+Model page
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Category extends Model
+{
+    use HasFactory;
+    protected $fillable=['id','branchID', 'CategoryName','category_type', 'updated_at','deleted_at','image'];
+
+    public function serviceSubcategories()
+    {
+        return $this->hasMany('App\Models\ServiceSubcategory','CategoryId','id');
+
+    }
+}
+--------------------------------------------------------------------------------------------------------------------------
+https://www.youtube.com/watch?v=ZSv5dneqW_k
+
+Validation:
+@error('email')
+<small class="text-danger">{{ $message }}</small>
+@enderror
+
+Validation:::
+ $request->validate([
+            'name' => 'required',
+            'email' => 'required|email',
+            'phone' => 'required|numeric|digits:10',
+            'subject'=> 'required',
+            'message' => 'required'
+        ]);
+
+Mail:::::
+ Mail::send('user_mail',['data'=> $data, ], function($message) use ($data) {
+            $message->from('noreply.khwahish@gmail.com', 'Khwahish');
+            $message->to($data['email']);
+            $message->cc('souvikjana.dits@gmail.com');
+            $message->subject('Thank You for Enquery'); 
+            
+        }); 
+
+
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.googlemail.com
+MAIL_PORT=465
+mail_username=noreply.khwahish@gmail.com
+MAIL_PASSWORD=qgdboxgmxtlemwxj
+MAIL_ENCRYPTION=ssl
+mail_from_address=noreply.khwahish@gmail.com
+
+
+
+ public function contact_us_insert(Request $request)
+    {
+        $request->validate([
+            'username' => 'required',
+            'email' => 'required|email',
+            'phone' => 'required|numeric|digits:10',
+            'subject'=> 'required',
+            'message' => 'required'
+        ]);
+       $contact = new ContactUs();
+       $contact->name = $request->username;
+       $contact->email = $request->email;
+       $contact->phone = $request->phone;
+       $contact->subject = $request->subject;
+       $contact->message = $request->message;
+       $contact->save();
+       $ContactStatus = $contact->save();
+           
+        Mail::send('website.user_mail',['data'=> $contact, ], function($message) use ($request) {
+        $message->from('noreply.khwahish@gmail.com', 'Single Window');
+        $message->to( $request->email);
+        $message->cc('madhusree.dits@gmail.com');
+        $message->subject('Thank You for Enquery');
+        }); 
+
+        if($ContactStatus)
+            return redirect()->back()->with('success','successfully submitted');
+        else{
+            return redirect()->back()->with('error','Error occured');
+        }
+        
+    }
+
+
+@extends('website.layouts.layout')
+@section('content')
+
+
+ $req->validate([
+            'image'=>'required|mimes:png,jpeg,jpg',
+        ]);
+
+sweetalert____________________________________________________________
+
+
+    @if(Session::get('success'))
+        <script>
+            swal("Good job!", "{{Session::get('success')}}", "success");
+        </script>
+    @endif
+
+    @if(Session::get('error'))
+        <script>
+            swal("Sorry!", "{{Session::get('error')}}", "error");
+        </script>
+    @endif
+
+#Validation____________________________________________________________
+
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+
+<script>
+$(document).ready(function () {
+    $('#contact_form').submit(function (e) {
+        e.preventDefault();
+        $('#error_message_phone').empty();
+        $('#error_message_username').empty();
+        $('#error_message_email').empty();
+        $('#error_message_subject').empty();
+        $('#error_message_message').empty();
+
+        if ($('#username').val() == '') {
+            $('#error_message_username').html('Please enter a Name.');
+            return;
+        }
+        else if (!validateEmail($('#email').val())) {
+            $('#error_message_email').html('Please enter a valid email.');
+            return;
+        }
+        else if (!isValidPhoneNumber($('#phone').val())) {
+            $('#error_message_phone').html('Please enter a valid 10-digit Phone Number.');
+            return;
+        }
+       
+        else if ($('#subject').val() == '') {
+            $('#error_message_subject').html('Please enter a Subject.');
+            return;
+        }
+        
+        else if ($('#messagesdad').val() == '') {
+            $('#error_message_message').html('Please Fill Message.');
+            return;
+        }
+
+        // else if ($('#bed').val() === '') {
+        //     alert('Please Select a Bed.');
+        //     return;
+        // }
+     
+
+        $(this).unbind('submit').submit();
+    });
+});
+function isValidPhoneNumber(phoneNumber) {
+        var cleanedPhoneNumber = phoneNumber.replace(/\D/g, '');
+        return cleanedPhoneNumber.length === 10;
+}
+function validateEmail(email)
+{
+    const re = /\S+@\S+\.\S+/;
+    return re.test(email);
+}
+</script>
+
+FORM_____________________________________________________________________________________________________
+
+
+  <form method="post" action="{{route('contact_us_insert')}} " id="contact_form" >
+                        @csrf
+                        <div class="row clearfix">
+                            <div class="col-lg-6 col-md-6 col-sm-12 form-group">
+                            <label>Name:<span style="color:red;">*</span></label>
+                                <input type="text" id="username" name="username" placeholder="Name">
+                                
+                                <small class="text-danger" id="error_message_username"></small>
+                                
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-12 form-group">
+                            <label>Email:<span style="color:red;">*</span></label>
+                                <input type="email" id="email" name="email" placeholder="Your Email">
+                             
+                                <small class="text-danger" id="error_message_email"></small>
+                             
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-12 form-group">
+                            <label>Phone:<span style="color:red;">*</span></label>
+                                <input type="text" id="phone" name="phone" placeholder="Your Phone">
+                               
+                                <small class="text-danger" id="error_message_phone"></small>
+                               
+                              
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-12 form-group">
+                            <label>Subject:<span style="color:red;">*</span></label>
+                                <input type="text" name="subject" id="subject" placeholder="Your Subject" >
+                             
+                                <small class="text-danger" id="error_message_subject"></small>
+                            
+                            </div>
+                            <div class="col-lg-12 col-md-12 col-sm-12 form-group">
+                            <label>Message:<span style="color:red;">*</span></label>
+                                <textarea class="" name="message" id="messagesdad" placeholder="Message"></textarea>
+                             
+                                <small class="text-danger" id="error_message_message"></small>
+                            
+                            </div>
+                            <div class="col-lg-12 col-md-12 col-sm-12 form-group">
+                                <button class="theme-btn btn-style-eight clearfix" type="submit">
+                                    <span class="btn-wrap">
+                                        <span class="text-one">Send Message</span>
+                                        <span class="text-two">Send Message</span>
+                                    </span>
+                                </button>
+                            </div>
+
+                        </div>
+                    </form>
+
+                </div>
+_________________________________________________________________________________________________
+
+
+
+yourposition	noofdevelopers
+
+
+
+composer create-project laravel/laravel test123 "9.0.*"
+
+
+ <?php
+  $data= DB::table('seo_details')->where('url',Request::url())->first();
+  ?>
+  <meta charset="utf-8">
+    @if($data)
+  <title>{{$data->title}}</title>
+  <meta name="description" content="{{$data->description}}">
+  <meta name="keywords" content="{{$data->keyword}}">
+	<meta property="og:type" content="{{$data->og_type}}" />
+	<meta property="og:title" content="{{$data->og_title}}" />
+	<meta property="og:description" content="{{$data->og_description}}" />
+	@endif
+	<meta property="og:locale" content="en_US" />
+	<link rel="canonical" href="{{Request::url()}}" />
+	<meta property="og:url" content="{{Request::url()}}" />
+	<meta property="og:site_name" content="Devnt It" />
+
+
+
+
