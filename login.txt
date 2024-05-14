@@ -1,0 +1,138 @@
+https://devantitsolutions.online
+
+
+Include in header and 
+
+@extends('website.layouts.app')
+
+@section('header')
+
+@include('website.include.header')
+
+@endsection
+
+@section('sidebar')
+
+@include('website.include.sidebar')
+
+@endsection
+
+@section('content')   
+
+
+
+footer section 
+
+ @endsection
+
+@section('footer')
+
+@include('website.include.footer')
+
+@endsection
+
+
+@yield('header')
+
+@yield('content')
+@yield('footer')
+
+@extends('website.layout.app')
+
+hcl::
+
+Dr. Lakshman Chandra Seth, (D.Litt.)
+DR. LAKSHMAN CHANDRA SETH, (D.LITT.)
+ICare Complex, Haldia, Purba Medinipur, W.B, India, Pin – 721657
+ <li class="dropdown">
+                                                    <a href="#">
+                                                        NAAC
+                                                    </a>
+                                                    <ul>
+                                                        <li>
+                                                            <a href="{{route('core_value')}}">Core values</a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{{route('code_of_conduct')}}">Code of conduct for student</a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{{route('code_of_professional')}}">Code of professional ethics for teachers</a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{{route('professional_ethics')}}">Professional ethics</a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{{route('code_ethics')}}">Code of Ethics for Plagiarism</a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{{route('incubation')}}">Incubation center</a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="#">Feedback</a>
+                                                        </li>
+                                                    </ul>
+                                                </li>
+
+
+  Hon'ble Chairman's Desk
+HON'BLE CHAIRMAN'S DESK
+
+affiliation
+
+
+Justice Taufique Uddin (Retd.)
+Academic advisor
+5year B.A.LL.B. (Hons.) Course
+3Year LL.B. Course
+2 year LL.M. Course
+
+Master of Law Course (LLM)
+
+202401021244081.jpg
+
+ <li>
+                                                    <a href="{{route('fees_structure')}}">Fees Structure</a>
+                                                </li>
+  <div class="about-quality">
+								  <div class="quality-box"><span class="quality-text">Course: 4</span> <span class="quality-text">Students: 50</span></div>
+								  <div class="quality-box">
+									 <span class="quality-text">Reviews:</span>
+									 <div class="course-rating">
+										<div class="star-rating" role="img" aria-label="Rated 4.00 out of 5"><span style="width:79%">Rated <strong class="rating">4.00</strong> out of 5</span></div>
+										4.00 (70)
+									 </div>
+								  </div>
+								  <div class="quality-box"><span class="quality-text">Experiance:</span> <span class="quality-text">10 Years</span></div>
+							   </div>
+
+
+
+
+<li class="elementor-icon-list-item">
+											<span class="elementor-icon-list-icon">
+							<i aria-hidden="true" class="fas fa-dot-circle"></i>						</span>
+										<span class="elementor-icon-list-text">ICARE School of Languages</span>
+									</li>
+
+
+href="mailto:hlclibrary@gmail.com"
+
+
+
+This Course shall be called 2-Year LL.M. Degree Course. For LL.M. Course, there are two dissertation papers are required to be submitted by the students in two semesters, which are evaluated with External Teachers as per University Rule. The College has got Autonomy in the LL.M. course from the University to take and organize the semester examinations and other administrative and examination matters relating to LL.M. Course.
+
+Legal education occupies an imperative place in every country. Post Graduate Degree in Law is a specialized postgraduate level qualification in law worldwide. Haldia Law College is one of the best law colleges in West Bengal , enriched with all modern facilities like Big Classrooms, Automated Modern Library with WIFI facility, Hostel Facility and having all academic facilities. Faculty members are helpful and experienced in their field. They help student in any matter regarding studies and other research.
+
+Post Graduate Degree of Law course will provide a scholar the experience and capability of research. In addition to that specialization will further enhance the scope of getting enrolled in Ph.D. Program. So for pursuing Ph.D in Law a postgraduate degree is indispensable. A LL.M. degree holder after clearing NET/SET can be eligible for the post of Assistant Professor in Law and in some Universities NET/SET is added qualification for pursuing Ph.D.
+
+Eligibility for admission :
+Two Year LL.M. Course (Four Semester Course): A candidate aspiring to get admission for the LL.M. Course of the College is required to have passed the LL.B. (Graduate examination in Law) with not less than 50% marks for General Students and 45% marks for SC/ ST/ OBC students. There is no age bar for admission in law college in West Bengal.
+
+Duation of Course:
+The duration of Post Graduate Degree of Law course shall be of Two years comprising of 4 (four) semesters.
+
+Attendence :​
+No student shall be allowed to take the end semester written examination if the student concerned has not attended minimum 70 % of the classes held in the subject concerned as also moot court exercises, practical training etc. taken together.
+
+Curriculum :
+The subjects and papers for the course shall be prescribed by the Vidyasagar University from time to time in accordance with the rules of the Bar Council of India.
